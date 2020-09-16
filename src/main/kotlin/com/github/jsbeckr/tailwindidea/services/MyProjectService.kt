@@ -1,7 +1,7 @@
-package org.jetbrains.plugins.template.services
+package com.github.jsbeckr.tailwindidea.services
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.template.MyBundle
+import com.github.jsbeckr.tailwindidea.MyBundle
 
 class MyProjectService(project: Project) {
 

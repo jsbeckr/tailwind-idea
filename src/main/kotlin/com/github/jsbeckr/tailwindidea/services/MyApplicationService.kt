@@ -1,6 +1,6 @@
-package org.jetbrains.plugins.template.services
+package com.github.jsbeckr.tailwindidea.services
 
-import org.jetbrains.plugins.template.MyBundle
+import com.github.jsbeckr.tailwindidea.MyBundle
 
 class MyApplicationService {
 
