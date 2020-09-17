@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.github.jsbeckr.tailwindidea</id>
-    <name>tailwind-idea</name>
+    <name>Tailwind-Idea</name>
     <vendor>jsbeckr</vendor>
 
     <!-- Product and plugin compatibility requirements -->
@@ -8,6 +8,7 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <completion.contributor language="any" implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor" />
         <applicationService serviceImplementation="com.github.jsbeckr.tailwindidea.services.MyApplicationService"/>
         <projectService serviceImplementation="com.github.jsbeckr.tailwindidea.services.MyProjectService"/>
     </extensions>
