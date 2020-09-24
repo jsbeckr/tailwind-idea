@@ -32,44 +32,43 @@ jobs:
         uses: gradle/wrapper-validation-action@v1
 
   # Run verifyPlugin and test Gradle tasks
-  test:
-    name: Test
-    needs: gradleValidation
-    runs-on: ubuntu-latest
-    container: gradle:jdk8
-    steps:
-
-      # Check out current repository
-      - name: Fetch Sources
-        uses: actions/checkout@v2
-
-      # Cache Gradle dependencies
-      - name: Setup Gradle Dependencies Cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle', '**/*.gradle.kts') }}
-
-      # Cache Gradle Wrapper
-      - name: Setup Gradle Wrapper Cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
-
-      # Run detekt, ktlint and tests
-      - name: Run Linters and Test
-        run: ./gradlew check
-
-      # Run verifyPlugin Gradle task
-      - name: Verify Plugin
-        run: ./gradlew verifyPlugin
+#  test:
+#    name: Test
+#    needs: gradleValidation
+#    runs-on: ubuntu-latest
+#    container: gradle:jdk8
+#    steps:
+#
+#      # Check out current repository
+#      - name: Fetch Sources
+#        uses: actions/checkout@v2
+#
+#      # Cache Gradle dependencies
+#      - name: Setup Gradle Dependencies Cache
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/.gradle/caches
+#          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle', '**/*.gradle.kts') }}
+#
+#      # Cache Gradle Wrapper
+#      - name: Setup Gradle Wrapper Cache
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/.gradle/wrapper
+#          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+#
+#      # Run detekt, ktlint and tests
+#      - name: Run Linters and Test
+#        run: ./gradlew check
+#
+#      # Run verifyPlugin Gradle task
+#      - name: Verify Plugin
+#        run: ./gradlew verifyPlugin
 
   # Build plugin with buildPlugin Gradle task and provide the artifact for the next workflow jobs
   # Requires test job to be passed
   build:
     name: Build
-    needs: test
     runs-on: ubuntu-latest
     container: gradle:jdk8
     outputs:
