@@ -43,6 +43,8 @@ dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.13.1")
 }
 
+
+
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
@@ -56,6 +58,7 @@ intellij {
 //  https://www.jetbrains.org/intellij/sdk/docs/basics/plugin_structure/plugin_dependencies.html
 //
 //  setPlugins("java")
+    setPlugins("JavaScript")
 }
 
 // Configure detekt plugin.
@@ -72,6 +75,10 @@ detekt {
 }
 
 tasks {
+    runIde {
+        autoReloadPlugins = true
+    }
+
     // Set the compatibility versions to 1.8
     withType<JavaCompile> {
         sourceCompatibility = "1.8"
