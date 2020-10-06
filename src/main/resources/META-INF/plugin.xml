@@ -14,6 +14,9 @@
         <projectConfigurable parentId="tools" instance="com.github.jsbeckr.tailwindidea.ProjectSettingsConfigurable"
                              id="com.github.jsbeckr.tailwindidea.ProjectSettingsConfigurable" displayName="Tailwind Settings"
                              nonDefaultProject="true"/>
+        <completion.contributor language="TypeScript JSX" implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor" />
+        <completion.contributor language="JSX Harmony" implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor" />
+        <completion.contributor language="XML" implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor" />
     </extensions>
 
     <projectListeners>
