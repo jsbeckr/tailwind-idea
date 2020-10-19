@@ -12,7 +12,16 @@ import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.TimeUnit
 
-data class TailwindClass(var id: String, var value: String, var children: MutableList<TailwindClass>)
+data class TailwindClass(
+    var id: String,
+    var value: String,
+    var parent: TailwindClass?,
+    var children: MutableList<TailwindClass>
+) {
+    override fun toString(): String {
+        return "$id - $value"
+    }
+}
 
 @Service
 class TailwindService(val project: Project) {
@@ -57,14 +66,14 @@ class TailwindService(val project: Project) {
         )
     }
 
-    fun generateTailwindClass(part: String, restParts: MutableList<String>): TailwindClass {
-        return if (restParts.count() != 0) {
-            val newPart = restParts.removeAt(0)
-            TailwindClass(part, "Group", arrayListOf(generateTailwindClass(newPart, restParts)))
-        } else {
-            TailwindClass(part, "Leaf", arrayListOf())
-        }
-    }
+//    fun generateTailwindClass(part: String, restParts: MutableList<String>): TailwindClass {
+//        return if (restParts.count() != 0) {
+//            val newPart = restParts.removeAt(0)
+//            TailwindClass(part, "Group", arrayListOf(generateTailwindClass(newPart, restParts)))
+//        } else {
+//            TailwindClass(part, "Leaf", arrayListOf())
+//        }
+//    }
 
     fun generateTailwindData() {
         val workingDir = project.basePath
@@ -85,7 +94,7 @@ class TailwindService(val project: Project) {
 //            val index = tailwindClasses.indexOfFirst { twClass -> twClass.id == firstPart }
 
             // No it's a new thing
-            addTailwindClass(tailwindClasses, firstPart, restParts)
+            addTailwindClass(tailwindClasses, firstPart, null, restParts)
             //tailwindClasses.add(generateTailwindClass(firstPart, parts))
             // Yes we have it already
 //            } else {
@@ -100,19 +109,20 @@ class TailwindService(val project: Project) {
     private fun addTailwindClass(
         tailwindClasses: MutableList<TailwindClass>,
         firstPart: String,
+        parent: TailwindClass?,
         restParts: MutableList<String>
     ) {
         val foundClass = tailwindClasses.find { it.id == firstPart }
         if (foundClass != null) {
             val newFirstPart = restParts.removeAt(0)
-            addTailwindClass(foundClass.children, newFirstPart, restParts)
+            addTailwindClass(foundClass.children, newFirstPart, foundClass, restParts)
         } else {
             val children = arrayListOf<TailwindClass>()
-            tailwindClasses.add(TailwindClass(firstPart, "Part", children))
+            tailwindClasses.add(TailwindClass(firstPart, "Part", parent, children))
 
             if (restParts.isNotEmpty()) {
                 val newFirstPart = restParts.removeAt(0)
-                addTailwindClass(children, newFirstPart, restParts)
+                addTailwindClass(children, newFirstPart, parent, restParts)
             } else {
                 return
             }
