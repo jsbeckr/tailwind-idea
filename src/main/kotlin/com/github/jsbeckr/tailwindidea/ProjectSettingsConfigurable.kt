@@ -4,7 +4,6 @@ import com.github.jsbeckr.tailwindidea.services.ProjectSettingsState
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
-import org.jetbrains.annotations.Nls
 import javax.swing.JComponent
 
 class ProjectSettingsConfigurable(project: Project) : Configurable {
@@ -33,6 +32,9 @@ class ProjectSettingsConfigurable(project: Project) : Configurable {
     override fun apply() {
         val settings = mProject.service<ProjectSettingsState>()
         settings.mainCssPath = mySettingsComponent!!.mainCssPath
+
+        val publisher = mProject.messageBus.syncPublisher(ActionTopics.TAILWIND_CONFIG_CHANGED)
+        publisher.tailwindConfigChanged()
     }
 
     override fun reset() {

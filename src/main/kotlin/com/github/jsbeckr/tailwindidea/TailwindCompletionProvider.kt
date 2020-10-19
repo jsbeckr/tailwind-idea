@@ -16,7 +16,7 @@ import com.intellij.util.ProcessingContext
 class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
 
     var mProject: Project? = null
-    var tailwindClasses: ArrayList<TailwindClass>? = null
+    var tailwindService: TailwindService? = null
 
     init {
         for (project in ProjectManager.getInstance().openProjects) {
@@ -27,8 +27,7 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
         }
 
         mProject?.let {
-            val tailwindService = it.service<TailwindService>()
-            tailwindClasses = tailwindService.tailwindClasses
+            tailwindService = it.service<TailwindService>()
         }
 
     }
@@ -50,12 +49,20 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
         }
     }
 
+    var test = true
+
     @ExperimentalStdlibApi
     private fun computeCompletions(regex: Regex, text: String, result: CompletionResultSet, debug: String) {
         val matchResult = regex.find(text)
 
+        if (test) {
+            test = !test
+            return
+        }
+        println("Compute Completions $text")
+
         fun foobar(completionText: String, match: MatchGroup?, restGroups: MutableList<MatchGroup?>): Unit {
-            val groupClass = tailwindClasses?.find {
+            val groupClass = tailwindService?.tailwindClasses?.find {
                 it.id == match?.value
             }
             val nextMatch = restGroups.removeFirstOrNull()
@@ -73,9 +80,17 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
                                 if (completionText.isEmpty()) groupClass.id else "$completionText:${groupClass.id}"
                             val newElement = LookupElementBuilder.create("$prefix:${it.id}")
 
-                            result.addElement(
-                                newElement.withTypeText(debug)
-                            )
+                            if (it.children.size > 0) {
+                                result.addElement(
+                                    newElement.withTailText(":")
+                                        .withInsertHandler(addColonInsertHandler).withTypeText("GROUP")
+                                )
+                            } else {
+                                result.addElement(
+                                    newElement.withTypeText(debug)
+                                )
+                            }
+
                         }
                     }
                 }
@@ -135,12 +150,12 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
         classes.map {
             it.children.let { children ->
                 if (children.size > 0) {
-                    println("Adding Group Element: ${it.id}:")
+//                    println("Adding Group Element: ${it.id}:")
                     val element = LookupElementBuilder.create(it.id).withTailText(":")
                         .withTypeText(it.value).withInsertHandler(addColonInsertHandler)
                     result.addElement(element)
                 } else {
-                    println("Adding Element: ${it.id}")
+//                    println("Adding Element: ${it.id}")
                     val element = LookupElementBuilder.create(it.id)
                         .withTypeText(it.value)
                     result.addElement(element)

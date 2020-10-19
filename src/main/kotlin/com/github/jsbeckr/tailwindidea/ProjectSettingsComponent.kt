@@ -19,7 +19,7 @@ class ProjectSettingsComponent(project: Project) {
 
     init {
         mainCssPathField.addBrowseFolderListener(
-                "Choose main css file",
+                "Choose tailwind config file",
                 "Very informative...",
                 mProject,
                 FileChooserDescriptorFactory.createSingleLocalFileDescriptor()
@@ -38,7 +38,7 @@ class ProjectSettingsComponent(project: Project) {
 
     init {
         panel = FormBuilder.createFormBuilder()
-                .addLabeledComponent(JBLabel("Tailwind CSS File "), mainCssPathField, 1, false)
+                .addLabeledComponent(JBLabel("Tailwind Config File "), mainCssPathField, 1, false)
                 .addComponentFillVertically(JPanel(), 0)
                 .panel
     }

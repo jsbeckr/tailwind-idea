@@ -3,6 +3,7 @@ package com.github.jsbeckr.tailwindidea.services
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.lang.javascript.service.JSLanguageServiceUtil
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.apache.commons.io.FileUtils
 import java.io.File
@@ -57,7 +58,7 @@ class TailwindService(val project: Project) {
             FileUtils.copyURLToFile(
                 src,
                 dest
-            );
+            )
         }
 
         copyFromJar(
@@ -66,45 +67,25 @@ class TailwindService(val project: Project) {
         )
     }
 
-//    fun generateTailwindClass(part: String, restParts: MutableList<String>): TailwindClass {
-//        return if (restParts.count() != 0) {
-//            val newPart = restParts.removeAt(0)
-//            TailwindClass(part, "Group", arrayListOf(generateTailwindClass(newPart, restParts)))
-//        } else {
-//            TailwindClass(part, "Leaf", arrayListOf())
-//        }
-//    }
-
     fun generateTailwindData() {
+        tailwindClasses.clear()
         val workingDir = project.basePath
         val generateTailwind =
             File(JSLanguageServiceUtil.getPluginDirectory(javaClass, "tailwind"), "generateTailwind.js").absolutePath
 
         val tmpFile = createTempFile()
 
-        "node ${generateTailwind} ${tmpFile.absolutePath}".runCommand(File(workingDir!!))
+        val settingsState = project.service<ProjectSettingsState>()
+        "node ${generateTailwind} ${settingsState.mainCssPath} ${tmpFile.absolutePath}".runCommand(File(workingDir!!))
 
         println(tmpFile.path)
         val jsonNode = ObjectMapper().readTree(tmpFile)
         jsonNode["classNames"].fields().forEach { field ->
             val restParts = field.key.split(":").toMutableList()
-            var firstPart = restParts.removeAt(0)
-
-            // Do we have that thing already?
-//            val index = tailwindClasses.indexOfFirst { twClass -> twClass.id == firstPart }
-
-            // No it's a new thing
+            val firstPart = restParts.removeAt(0)
             addTailwindClass(tailwindClasses, firstPart, null, restParts)
-            //tailwindClasses.add(generateTailwindClass(firstPart, parts))
-            // Yes we have it already
-//            } else {
-            // remove next part, because the old firstPart is already in the classes
-//                firstPart = restParts.removeAt(0)
-
-            //tailwindClasses[index].children?.add(generateTailwindClass(firstPart, parts))
         }
     }
-
 
     private fun addTailwindClass(
         tailwindClasses: MutableList<TailwindClass>,

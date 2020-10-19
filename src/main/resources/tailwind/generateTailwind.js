@@ -15,6 +15,9 @@ function replacer(key, value) {
 async function test() {
     let postcssResult
 
+    const tailwindConfig = process.argv[2]
+    const tmpFile = process.argv[3]
+
     try {
         postcssResult = await Promise.all(
             [
@@ -22,7 +25,7 @@ async function test() {
                 'components',
                 'utilities',
             ].map((group) =>
-                postcss([tailwindcss("./tailwind.js")]).process(`@tailwind ${group};`, {
+                postcss([tailwindcss(tailwindConfig)]).process(`@tailwind ${group};`, {
                     from: undefined,
                 })
             )
@@ -35,7 +38,7 @@ async function test() {
         ])
 
         const json = JSON.stringify(classNames, null)
-        fs.writeFileSync(process.argv[2], json)
+        fs.writeFileSync(tmpFile, json)
         process.exit()
     } catch (error) {
         throw error

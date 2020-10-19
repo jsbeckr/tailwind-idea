@@ -12,15 +12,21 @@
         <projectService serviceImplementation="com.github.jsbeckr.tailwindidea.services.TailwindService"/>
         <projectService serviceImplementation="com.github.jsbeckr.tailwindidea.services.ProjectSettingsState"/>
         <projectConfigurable parentId="tools" instance="com.github.jsbeckr.tailwindidea.ProjectSettingsConfigurable"
-                             id="com.github.jsbeckr.tailwindidea.ProjectSettingsConfigurable" displayName="Tailwind Settings"
+                             id="com.github.jsbeckr.tailwindidea.ProjectSettingsConfigurable"
+                             displayName="Tailwind Settings"
                              nonDefaultProject="true"/>
-        <completion.contributor language="TypeScript JSX" implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor" />
-        <completion.contributor language="JSX Harmony" implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor" />
-        <completion.contributor language="XML" implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor" />
+        <completion.contributor language="TypeScript JSX"
+                                implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor"/>
+        <completion.contributor language="JSX Harmony"
+                                implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor"/>
+        <completion.contributor language="XML"
+                                implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor"/>
     </extensions>
 
     <projectListeners>
         <listener class="com.github.jsbeckr.tailwindidea.listeners.MyProjectManagerListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
+        <listener class="com.github.jsbeckr.tailwindidea.listeners.MyTailwindConfigChangedListener"
+                  topic="com.github.jsbeckr.tailwindidea.TailwindConfigChangedListener"/>
     </projectListeners>
 </idea-plugin>

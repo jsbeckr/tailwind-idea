@@ -5,7 +5,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 
 @State(name = "TailwindSettings")
 class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState> {
-    var mainCssPath = "src/styles/index.css"
+    var mainCssPath = "tailwind.js"
 
     override fun getState(): ProjectSettingsState? {
         return this
