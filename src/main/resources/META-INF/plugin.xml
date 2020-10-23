@@ -3,6 +3,10 @@
     <name>Tailwind Intellisense</name>
     <vendor>jsbeckr</vendor>
 
+    <description>Intellisense / Autocomplete for Tailwind CSS.</description>
+
+    <change-notes>Initial release of the plugin.</change-notes>
+
     <!-- Product and plugin compatibility requirements -->
     <!-- https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
