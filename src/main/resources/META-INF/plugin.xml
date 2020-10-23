@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.github.jsbeckr.tailwindidea</id>
-    <name>Tailwind-Idea</name>
+    <name>Tailwind Intellisense</name>
     <vendor>jsbeckr</vendor>
 
     <!-- Product and plugin compatibility requirements -->
