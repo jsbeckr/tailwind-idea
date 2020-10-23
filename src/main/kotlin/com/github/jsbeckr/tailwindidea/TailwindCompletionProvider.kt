@@ -1,6 +1,5 @@
 package com.github.jsbeckr.tailwindidea
 
-import com.github.jsbeckr.tailwindidea.services.TailwindClass
 import com.github.jsbeckr.tailwindidea.services.TailwindService
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
@@ -49,30 +48,22 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
         }
     }
 
-    var test = true
-
     @ExperimentalStdlibApi
-    private fun computeCompletions(regex: Regex, text: String, result: CompletionResultSet, debug: String) {
-        val matchResult = regex.find(text)
-
-        if (test) {
-            test = !test
-            return
-        }
-        println("Compute Completions $text")
-
-        fun foobar(completionText: String, match: MatchGroup?, restGroups: MutableList<MatchGroup?>): Unit {
+    private fun computeCompletions(groups: MutableList<String>, result: CompletionResultSet) {
+        fun foobar(completionText: String, group: String?, restGroups: MutableList<String>): Unit {
             val groupClass = tailwindService?.tailwindClasses?.find {
-                it.id == match?.value
+                it.id == group
             }
             val nextMatch = restGroups.removeFirstOrNull()
 
             // exit condition: no matchgroups anymore
             when {
                 groupClass == null -> {
-                    return
+                    throw Exception("Shouldnt happen")
                 }
-                nextMatch == null -> {
+                nextMatch == "" || tailwindService?.tailwindClasses?.find {
+                    it.id == nextMatch
+                } == null -> {
                     // fill all
                     groupClass.children.let { children ->
                         children.forEach {
@@ -87,7 +78,7 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
                                 )
                             } else {
                                 result.addElement(
-                                    newElement.withTypeText(debug)
+                                    newElement.withTypeText("LEAF")
                                 )
                             }
 
@@ -101,17 +92,9 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
             }
         }
 
-        matchResult?.let { mr ->
-            val groups = mr.groups.toMutableList()
-            if (groups.size > 1) {
-                // we ignore the first group
-                groups.removeFirst()
-
-                // this is the first real match
-                val firstMatch = groups.removeFirstOrNull()
-                foobar("", firstMatch, groups)
-            }
-        }
+        // this is the first real match
+        val firstMatch = groups.removeFirstOrNull()
+        foobar("", firstMatch, groups)
     }
 
     @ExperimentalStdlibApi
@@ -120,6 +103,7 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
+        var betterResultSet = result
         var activeProject: Project? = null
         for (project in ProjectManager.getInstance().openProjects) {
             val window = WindowManager.getInstance().suggestParentWindow(project)
@@ -131,36 +115,31 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
         val tailwindService = activeProject!!.service<TailwindService>()
         val classes = tailwindService.tailwindClasses
 
-        // TODO: make this recursive????
-        // or just simple with idk 4 different regexes??
+        val prefixes = betterResultSet.prefixMatcher.prefix.split(" ")
+        val prefix = prefixes.last()
+        betterResultSet = betterResultSet.withPrefixMatcher(prefix)
 
-        val regex1 = Regex(""".*\s([\S]+):[\S]*IntellijIdeaRulezzz.*""")
-        val regex2 = Regex(""".*\s([\S]+):([\S]+):[\S]*IntellijIdeaRulezzz.*""")
-        val regex3 = Regex(""".*\s([\S]+):([\S]+):([\S]+):[\S]*IntellijIdeaRulezzz.*""")
-        val regex4 = Regex(""".*\s([\S]+):([\S]+):([\S]+):([\S]+):[\S]*IntellijIdeaRulezzz.*""")
+        val groups = prefix.split(":")
 
-        val myText = parameters.position.text
-        when {
-            regex4.matches(myText) -> computeCompletions(regex4, myText, result, "regex4")
-            regex3.matches(myText) -> computeCompletions(regex3, myText, result, "regex3")
-            regex2.matches(myText) -> computeCompletions(regex2, myText, result, "regex2")
-            regex1.matches(myText) -> computeCompletions(regex1, myText, result, "regex1")
-        }
-
-        classes.map {
-            it.children.let { children ->
-                if (children.size > 0) {
-//                    println("Adding Group Element: ${it.id}:")
-                    val element = LookupElementBuilder.create(it.id).withTailText(":")
-                        .withTypeText(it.value).withInsertHandler(addColonInsertHandler)
-                    result.addElement(element)
-                } else {
-//                    println("Adding Element: ${it.id}")
-                    val element = LookupElementBuilder.create(it.id)
-                        .withTypeText(it.value)
-                    result.addElement(element)
+        if (groups.size == 1) {
+            classes.map {
+                it.children.let { children ->
+                    if (children.size > 0) {
+                        val element = LookupElementBuilder.create(it.id).withTailText(":")
+                            .withTypeText(it.value).withInsertHandler(addColonInsertHandler)
+                        val prioElement = PrioritizedLookupElement.withPriority(element, 2.0)
+                        betterResultSet.addElement(prioElement)
+                    } else {
+                        val element = LookupElementBuilder.create(it.id)
+                            .withTypeText(it.value)
+                        betterResultSet.addElement(element)
+                    }
                 }
             }
+        } else {
+            computeCompletions(groups.toMutableList(), betterResultSet)
         }
+
+        betterResultSet.addLookupAdvertisement("Tailwind ftw!")
     }
 }

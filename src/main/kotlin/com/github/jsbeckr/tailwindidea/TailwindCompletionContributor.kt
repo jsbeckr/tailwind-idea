@@ -13,14 +13,20 @@ class TailwindCompletionContributor : CompletionContributor() {
         // `bg-gray-100 sm:COMPLETION_HERE`
         extend(
             CompletionType.BASIC,
-            psiElement(JSTokenTypes.STRING_TEMPLATE_PART),
+            psiElement(JSTokenTypes.STRING_TEMPLATE_PART).withSuperParent(
+                5,
+                XmlPatterns.xmlAttribute().withName("className")
+            ),
             TailwindCompletionProvider()
         )
 
         // `bg-gray-100 ${sm:COMPLETION_HERE}`
         extend(
             CompletionType.BASIC,
-            psiElement(JSTokenTypes.STRING_LITERAL),
+            psiElement(JSTokenTypes.STRING_LITERAL).withSuperParent(
+                7,
+                XmlPatterns.xmlAttribute().withName("className")
+            ),
             TailwindCompletionProvider()
         )
 
@@ -44,4 +50,9 @@ class TailwindCompletionContributor : CompletionContributor() {
             TailwindCompletionProvider()
         )
     }
+
+    // for debug purposes
+//    override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
+//        super.fillCompletionVariants(parameters, result)
+//    }
 }

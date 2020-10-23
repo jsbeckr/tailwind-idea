@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "import-from": "^3.0.0",
     "postcss": "^8.1.1",
+    "resolve-from": "^5.0.0",
     "tailwindcss": "^1.8.10"
   }
 }

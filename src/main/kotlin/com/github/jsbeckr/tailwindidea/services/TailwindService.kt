@@ -2,10 +2,17 @@ package com.github.jsbeckr.tailwindidea.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.lang.javascript.service.JSLanguageServiceUtil
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.apache.commons.io.FileUtils
+import org.jetbrains.annotations.NotNull
 import java.io.File
 import java.io.IOException
 import java.net.URISyntaxException
@@ -33,20 +40,23 @@ class TailwindService(val project: Project) {
         extractJSFiles()
         generateTailwindData()
 
-//        project.messageBus.connect().subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
-//            override fun after(@NotNull events: List<VFileEvent?>) {
-//                events.forEach {
-//                    if (it != null && it.file != null) {
-//                        val file = it.file as VirtualFile
-//                        if (ProjectFileIndex.getInstance(project).isInContent(file)) {
-//                            if (file.name == "tailwind.js") {
-//                                FileBasedIndex.getInstance().scheduleRebuild(CssIndex.CSS_INDEX, Throwable("CSS Index"))
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        })
+        // update tailwindclasses if tailwind settingsclass changes
+        project.messageBus.connect().subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
+            override fun after(@NotNull events: List<VFileEvent?>) {
+                events.forEach {
+                    if (it != null && it.file != null) {
+                        val file = it.file as VirtualFile
+                        if (ProjectFileIndex.getInstance(project).isInContent(file)) {
+                            val settingsState = project.service<ProjectSettingsState>()
+                            val configFile = File(settingsState.mainCssPath)
+                            if (file.path == configFile.path) {
+                                generateTailwindData()
+                            }
+                        }
+                    }
+                }
+            }
+        })
     }
 
     private fun extractJSFiles() {
@@ -75,15 +85,23 @@ class TailwindService(val project: Project) {
 
         val tmpFile = createTempFile()
 
-        val settingsState = project.service<ProjectSettingsState>()
-        "node ${generateTailwind} ${settingsState.mainCssPath} ${tmpFile.absolutePath}".runCommand(File(workingDir!!))
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val settingsState = project.service<ProjectSettingsState>()
+            "node $generateTailwind ${settingsState.mainCssPath} ${tmpFile.absolutePath} $workingDir".runCommand(
+                File(
+                    workingDir!!
+                )
+            )
 
-        println(tmpFile.path)
-        val jsonNode = ObjectMapper().readTree(tmpFile)
-        jsonNode["classNames"].fields().forEach { field ->
-            val restParts = field.key.split(":").toMutableList()
-            val firstPart = restParts.removeAt(0)
-            addTailwindClass(tailwindClasses, firstPart, null, restParts)
+            val jsonNode = ObjectMapper().readTree(tmpFile)
+            jsonNode["classNames"].fields().forEach { field ->
+                val restParts = field.key.split(":").toMutableList()
+                val firstPart = restParts.removeAt(0)
+                addTailwindClass(tailwindClasses, firstPart, null, restParts)
+            }
+
+            // Delete tmpfile
+            Files.delete(tmpFile.toPath())
         }
     }
 

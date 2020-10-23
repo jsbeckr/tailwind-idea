@@ -1,7 +1,8 @@
 const process = require("process");
-const postcss = require("postcss")
-const tailwindcss = require("tailwindcss");
+const resolveFrom = require("resolve-from")
+const importFrom = require("import-from")
 const fs = require("fs")
+const path = require("path")
 const extractClassNames = require("./extractClassNames")
 
 function replacer(key, value) {
@@ -17,6 +18,11 @@ async function test() {
 
     const tailwindConfig = process.argv[2]
     const tmpFile = process.argv[3]
+    const cwd = process.argv[4]
+    const nodeModulesPath = `${cwd}/node_modules`
+
+    const postcss = importFrom(nodeModulesPath, './postcss')
+    const tailwindcss = importFrom(nodeModulesPath, './tailwindcss')
 
     try {
         postcssResult = await Promise.all(
@@ -32,9 +38,9 @@ async function test() {
         )
         const [base, components, utilities] = postcssResult
         const classNames = await extractClassNames([
-            { root: base.root, source: 'base' },
-            { root: components.root, source: 'components' },
-            { root: utilities.root, source: 'utilities' },
+            {root: base.root, source: 'base'},
+            {root: components.root, source: 'components'},
+            {root: utilities.root, source: 'utilities'},
         ])
 
         const json = JSON.stringify(classNames, null)
