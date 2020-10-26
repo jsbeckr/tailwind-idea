@@ -5,7 +5,7 @@
 
     <description>Intellisense / Autocomplete for Tailwind CSS.</description>
 
-    <change-notes>Initial release of the plugin.</change-notes>
+    <change-notes>Fix bug.</change-notes>
 
     <!-- Product and plugin compatibility requirements -->
     <!-- https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
