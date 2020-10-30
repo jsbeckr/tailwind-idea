@@ -6,7 +6,6 @@ import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.IOException
 import java.net.URISyntaxException
-import java.net.URLDecoder
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 
@@ -32,15 +31,11 @@ class TailwindAppStarter : ApplicationInitializedListener {
 
         copyFromJar(
             "/tailwind/node_modules",
-            Path.of(
-                URLDecoder.decode(JSLanguageServiceUtil.getPluginDirectory(javaClass, "").absolutePath, "UTF-8"),
-                "node_modules"
-            )
         )
     }
 
     @Throws(URISyntaxException::class, IOException::class)
-    fun copyFromJar(source: String, target: Path) {
+    fun copyFromJar(source: String) {
         val resource = javaClass.getResource("").toURI()
         try {
             val fileSystem = FileSystems.newFileSystem(
