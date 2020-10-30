@@ -1,6 +1,7 @@
 package com.github.jsbeckr.tailwindidea.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.intellij.javascript.nodejs.interpreter.local.NodeJsLocalInterpreterManager
 import com.intellij.lang.javascript.service.JSLanguageServiceUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
@@ -60,6 +61,9 @@ class TailwindService(val project: Project) {
     }
 
     private fun extractJSFiles() {
+        val tailwindPath = JSLanguageServiceUtil.getPluginDirectory(javaClass, "tailwind")
+        tailwindPath.deleteRecursively()
+
         val files = listOf("generateTailwind.js", "extractClassNames.js")
         for (file in files) {
             val src = javaClass.getResource("/tailwind/${file}")
@@ -87,7 +91,10 @@ class TailwindService(val project: Project) {
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val settingsState = project.service<ProjectSettingsState>()
-            "node $generateTailwind ${settingsState.mainCssPath} ${tmpFile.absolutePath} $workingDir".runCommand(
+            // TODO: error handling
+            val nodePath = NodeJsLocalInterpreterManager.getInstance().interpreters[0].interpreterSystemDependentPath
+
+            "$nodePath $generateTailwind ${settingsState.mainCssPath} ${tmpFile.absolutePath} $workingDir".runCommand(
                 File(
                     workingDir!!
                 )
@@ -145,29 +152,34 @@ class TailwindService(val project: Project) {
     @Throws(URISyntaxException::class, IOException::class)
     fun copyFromJar(source: String?, target: Path) {
         val resource = javaClass.getResource("").toURI()
-        val fileSystem = FileSystems.newFileSystem(
-            resource, emptyMap<String, String>()
-        )
-        val jarPath: Path = fileSystem.getPath(source)
-        Files.walkFileTree(jarPath, object : SimpleFileVisitor<Path>() {
-            private var currentTarget: Path? = null
+        try {
 
-            @Throws(IOException::class)
-            override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                currentTarget = target.resolve(jarPath.relativize(dir).toString())
-                Files.createDirectories(currentTarget)
-                return FileVisitResult.CONTINUE
-            }
+            val fileSystem = FileSystems.newFileSystem(
+                resource, emptyMap<String, String>()
+            )
+            val jarPath: Path = fileSystem.getPath(source)
+            Files.walkFileTree(jarPath, object : SimpleFileVisitor<Path>() {
+                private var currentTarget: Path? = null
 
-            @Throws(IOException::class)
-            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                Files.copy(
-                    file,
-                    target.resolve(jarPath.relativize(file).toString()),
-                    StandardCopyOption.REPLACE_EXISTING
-                )
-                return FileVisitResult.CONTINUE
-            }
-        })
+                @Throws(IOException::class)
+                override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
+                    currentTarget = target.resolve(jarPath.relativize(dir).toString())
+                    Files.createDirectories(currentTarget)
+                    return FileVisitResult.CONTINUE
+                }
+
+                @Throws(IOException::class)
+                override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                    Files.copy(
+                        file,
+                        target.resolve(jarPath.relativize(file).toString()),
+                        StandardCopyOption.REPLACE_EXISTING
+                    )
+                    return FileVisitResult.CONTINUE
+                }
+            })
+        } catch (ex: FileSystemAlreadyExistsException) {
+            println(ex.message)
+        }
     }
 }
