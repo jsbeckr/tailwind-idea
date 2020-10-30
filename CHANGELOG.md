@@ -5,8 +5,8 @@
 ## [Unreleased]
 ### Fixed
 - node_modules not in jar
+- use local node interpreter
 
-### Security
 ## [0.0.4]
 ### Added
 - Kind of working plugin
