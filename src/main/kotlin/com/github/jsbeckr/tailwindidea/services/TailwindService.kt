@@ -3,6 +3,9 @@ package com.github.jsbeckr.tailwindidea.services
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.javascript.nodejs.interpreter.local.NodeJsLocalInterpreterManager
 import com.intellij.lang.javascript.service.JSLanguageServiceUtil
+import com.intellij.notification.NotificationDisplayType
+import com.intellij.notification.NotificationGroup
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -12,13 +15,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
-import org.apache.commons.io.FileUtils
 import org.jetbrains.annotations.NotNull
 import java.io.File
-import java.io.IOException
-import java.net.URISyntaxException
-import java.nio.file.*
-import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 
 data class TailwindClass(
@@ -35,10 +34,18 @@ data class TailwindClass(
 @Service
 class TailwindService(val project: Project) {
 
+    companion object {
+        val NOTIFICATION_GROUP = NotificationGroup("Custom Notification Group", NotificationDisplayType.BALLOON, true);
+
+        fun notify(project: Project?, content: String) {
+            NOTIFICATION_GROUP.createNotification(content, NotificationType.INFORMATION)
+                .notify(project);
+        }
+    }
+
     var tailwindClasses: ArrayList<TailwindClass> = ArrayList()
 
     init {
-        extractJSFiles()
         generateTailwindData()
 
         // update tailwindclasses if tailwind settingsclass changes
@@ -60,32 +67,14 @@ class TailwindService(val project: Project) {
         })
     }
 
-    private fun extractJSFiles() {
-        val tailwindPath = JSLanguageServiceUtil.getPluginDirectory(javaClass, "tailwind")
-        tailwindPath.deleteRecursively()
-
-        val files = listOf("generateTailwind.js", "extractClassNames.js")
-        for (file in files) {
-            val src = javaClass.getResource("/tailwind/${file}")
-            val dest = File(JSLanguageServiceUtil.getPluginDirectory(javaClass, "tailwind"), file)
-
-            FileUtils.copyURLToFile(
-                src,
-                dest
-            )
-        }
-
-        copyFromJar(
-            "/tailwind/node_modules",
-            Paths.get("${JSLanguageServiceUtil.getPluginDirectory(javaClass, "tailwind")}/node_modules")
-        )
-    }
-
     fun generateTailwindData() {
         tailwindClasses.clear()
         val workingDir = project.basePath
         val generateTailwind =
-            File(JSLanguageServiceUtil.getPluginDirectory(javaClass, "tailwind"), "generateTailwind.js").absolutePath
+                File(
+                    JSLanguageServiceUtil.getPluginDirectory(javaClass, "tailwind"),
+                    "generateTailwind.js"
+                ).absolutePath
 
         val tmpFile = createTempFile()
 
@@ -94,7 +83,9 @@ class TailwindService(val project: Project) {
             // TODO: error handling
             val nodePath = NodeJsLocalInterpreterManager.getInstance().interpreters[0].interpreterSystemDependentPath
 
-            "$nodePath $generateTailwind ${settingsState.mainCssPath} ${tmpFile.absolutePath} $workingDir".runCommand(
+            val command = "$nodePath#$generateTailwind#${settingsState.mainCssPath}#${tmpFile.absolutePath}#$workingDir"
+
+            command.runCommand(
                 File(
                     workingDir!!
                 )
@@ -137,7 +128,8 @@ class TailwindService(val project: Project) {
 
     fun String.runCommand(workingDir: File) {
         try {
-            ProcessBuilder(*split(" ").toTypedArray())
+            val command = this.split("#").toList()
+            ProcessBuilder(command)
                 .directory(workingDir)
                 .redirectOutput(ProcessBuilder.Redirect.PIPE)
                 .redirectError(ProcessBuilder.Redirect.INHERIT)
@@ -146,40 +138,6 @@ class TailwindService(val project: Project) {
         } catch (exception: Exception) {
             println(exception.message)
             throw exception
-        }
-    }
-
-    @Throws(URISyntaxException::class, IOException::class)
-    fun copyFromJar(source: String?, target: Path) {
-        val resource = javaClass.getResource("").toURI()
-        try {
-
-            val fileSystem = FileSystems.newFileSystem(
-                resource, emptyMap<String, String>()
-            )
-            val jarPath: Path = fileSystem.getPath(source)
-            Files.walkFileTree(jarPath, object : SimpleFileVisitor<Path>() {
-                private var currentTarget: Path? = null
-
-                @Throws(IOException::class)
-                override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                    currentTarget = target.resolve(jarPath.relativize(dir).toString())
-                    Files.createDirectories(currentTarget)
-                    return FileVisitResult.CONTINUE
-                }
-
-                @Throws(IOException::class)
-                override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                    Files.copy(
-                        file,
-                        target.resolve(jarPath.relativize(file).toString()),
-                        StandardCopyOption.REPLACE_EXISTING
-                    )
-                    return FileVisitResult.CONTINUE
-                }
-            })
-        } catch (ex: FileSystemAlreadyExistsException) {
-            println(ex.message)
         }
     }
 }

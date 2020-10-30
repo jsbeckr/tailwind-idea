@@ -14,18 +14,18 @@ import com.intellij.util.ProcessingContext
 
 class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
 
-    var mProject: Project? = null
+    var project: Project? = null
     var tailwindService: TailwindService? = null
 
     init {
         for (project in ProjectManager.getInstance().openProjects) {
             val window = WindowManager.getInstance().suggestParentWindow(project)
             if (window != null && window.isActive) {
-                mProject = project
+                this.project = project
             }
         }
 
-        mProject?.let {
+        project?.let {
             tailwindService = it.service<TailwindService>()
         }
 
@@ -59,7 +59,8 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
             // exit condition: no matchgroups anymore
             when {
                 groupClass == null -> {
-                    throw Exception("Shouldnt happen")
+                    TailwindService.notify(project, "nextMatch: $nextMatch")
+                    //throw Exception("Shouldnt happen")
                 }
                 nextMatch == "" || tailwindService?.tailwindClasses?.find {
                     it.id == nextMatch

@@ -27,6 +27,7 @@
                                 implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor"/>
         <completion.contributor language="XML" order="first"
                                 implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor"/>
+        <applicationInitializedListener implementation="com.github.jsbeckr.tailwindidea.TailwindAppStarter" />
     </extensions>
 
     <projectListeners>
