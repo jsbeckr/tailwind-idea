@@ -44,6 +44,16 @@ dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.13.1")
 }
 
+kotlin {
+    sourceSets {
+        main {
+            dependencies {
+                implementation("commons-io:commons-io:2.8.0")
+            }
+        }
+    }
+}
+
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {

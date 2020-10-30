@@ -4,8 +4,9 @@
 
 ## [Unreleased]
 ### Fixed
-- node_modules not in jar
+- use tailwindcss and postcss packages of web project
 - use local node interpreter
+- commons-io dependency for WebStorm
 
 ## [0.0.4]
 ### Added
