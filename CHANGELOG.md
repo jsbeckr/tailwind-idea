@@ -3,17 +3,9 @@
 # tailwind-idea Changelog
 
 ## [Unreleased]
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
-
 ### Fixed
+- remove unused notification for compatibility
 
-### Security
 ## [0.0.5]
 ### Fixed
 - use tailwindcss and postcss packages of web project

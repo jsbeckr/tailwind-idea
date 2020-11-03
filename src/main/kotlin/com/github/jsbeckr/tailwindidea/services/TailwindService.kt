@@ -3,9 +3,6 @@ package com.github.jsbeckr.tailwindidea.services
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.javascript.nodejs.interpreter.local.NodeJsLocalInterpreterManager
 import com.intellij.lang.javascript.service.JSLanguageServiceUtil
-import com.intellij.notification.NotificationDisplayType
-import com.intellij.notification.NotificationGroup
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -33,16 +30,6 @@ data class TailwindClass(
 
 @Service
 class TailwindService(val project: Project) {
-
-    companion object {
-        val NOTIFICATION_GROUP = NotificationGroup("Custom Notification Group", NotificationDisplayType.BALLOON, true);
-
-        fun notify(project: Project?, content: String) {
-            NOTIFICATION_GROUP.createNotification(content, NotificationType.INFORMATION)
-                .notify(project);
-        }
-    }
-
     var tailwindClasses: ArrayList<TailwindClass> = ArrayList()
 
     init {
@@ -71,10 +58,10 @@ class TailwindService(val project: Project) {
         tailwindClasses.clear()
         val workingDir = project.basePath
         val generateTailwind =
-                File(
-                    JSLanguageServiceUtil.getPluginDirectory(javaClass, "tailwind"),
-                    "generateTailwind.js"
-                ).absolutePath
+            File(
+                JSLanguageServiceUtil.getPluginDirectory(javaClass, "tailwind"),
+                "generateTailwind.js"
+            ).absolutePath
 
         val tmpFile = createTempFile()
 

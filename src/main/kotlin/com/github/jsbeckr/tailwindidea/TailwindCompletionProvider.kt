@@ -59,8 +59,7 @@ class TailwindCompletionProvider : CompletionProvider<CompletionParameters>() {
             // exit condition: no matchgroups anymore
             when {
                 groupClass == null -> {
-                    TailwindService.notify(project, "nextMatch: $nextMatch")
-                    //throw Exception("Shouldnt happen")
+                    throw Exception("Shouldnt happen")
                 }
                 nextMatch == "" || tailwindService?.tailwindClasses?.find {
                     it.id == nextMatch
