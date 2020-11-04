@@ -3,17 +3,9 @@
 # tailwind-idea Changelog
 
 ## [Unreleased]
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
-
 ### Fixed
+- catch exception if no nodejs interpreter is found
 
-### Security
 ## [0.0.6]
 ### Fixed
 - remove unused notification for compatibility

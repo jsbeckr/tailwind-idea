@@ -67,26 +67,32 @@ class TailwindService(val project: Project) {
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val settingsState = project.service<ProjectSettingsState>()
-            // TODO: error handling
-            val nodePath = NodeJsLocalInterpreterManager.getInstance().interpreters[0].interpreterSystemDependentPath
+            try {
+                // TODO: error handling maybe make it possible to select nodejs interpreter?
+                val nodePath =
+                    NodeJsLocalInterpreterManager.getInstance().interpreters[0].interpreterSystemDependentPath
 
-            val command = "$nodePath#$generateTailwind#${settingsState.mainCssPath}#${tmpFile.absolutePath}#$workingDir"
+                val command =
+                    "$nodePath#$generateTailwind#${settingsState.mainCssPath}#${tmpFile.absolutePath}#$workingDir"
 
-            command.runCommand(
-                File(
-                    workingDir!!
+                command.runCommand(
+                    File(
+                        workingDir!!
+                    )
                 )
-            )
 
-            val jsonNode = ObjectMapper().readTree(tmpFile)
-            jsonNode["classNames"].fields().forEach { field ->
-                val restParts = field.key.split(":").toMutableList()
-                val firstPart = restParts.removeAt(0)
-                addTailwindClass(tailwindClasses, firstPart, null, restParts)
+                val jsonNode = ObjectMapper().readTree(tmpFile)
+                jsonNode["classNames"].fields().forEach { field ->
+                    val restParts = field.key.split(":").toMutableList()
+                    val firstPart = restParts.removeAt(0)
+                    addTailwindClass(tailwindClasses, firstPart, null, restParts)
+                }
+
+                // Delete tmpfile
+                Files.delete(tmpFile.toPath())
+            } catch (ex: Exception) {
+                println(ex.message)
             }
-
-            // Delete tmpfile
-            Files.delete(tmpFile.toPath())
         }
     }
 
