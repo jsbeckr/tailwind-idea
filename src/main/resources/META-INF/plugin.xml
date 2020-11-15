@@ -11,6 +11,7 @@
     <!-- https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <depends>JavaScript</depends>
+    <depends>com.jetbrains.php</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="com.github.jsbeckr.tailwindidea.services.TailwindService"/>
@@ -26,6 +27,8 @@
         <completion.contributor language="JSX Harmony" order="first"
                                 implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor"/>
         <completion.contributor language="XML" order="first"
+                                implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor"/>
+        <completion.contributor language="PHP" order="first"
                                 implementationClass="com.github.jsbeckr.tailwindidea.TailwindCompletionContributor"/>
         <applicationInitializedListener implementation="com.github.jsbeckr.tailwindidea.TailwindAppStarter" />
     </extensions>

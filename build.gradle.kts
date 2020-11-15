@@ -67,7 +67,7 @@ intellij {
 //  https://www.jetbrains.org/intellij/sdk/docs/basics/plugin_structure/plugin_dependencies.html
 //
 //  setPlugins("java")
-    setPlugins("JavaScriptLanguage")
+    setPlugins("JavaScriptLanguage", "com.jetbrains.php:202.6397.94")
 }
 
 // Configure detekt plugin.
